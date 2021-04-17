@@ -49,13 +49,13 @@ def welcome():
 def percipitation():
     session = Session(engine)
     
-    results0= session.query(Measurement.date,Measurement.prcp ).all()
+    results= session.query(Measurement.date,Measurement.prcp ).all()
 
     session.close()
 
     # Create a dictionary from the row data and append to a list of all_prcp
     all_prcp = []
-    for date2, prcp in results0:
+    for date2, prcp in results:
         prcp_dict = {}
         prcp_dict["date"] = date2
         prcp_dict["prcp"] = prcp
@@ -65,19 +65,17 @@ def percipitation():
 @app.route("/api/v1.0/station")
 def stationfunc():
     session = Session(engine)
-    results2= session.query(Station.station).all()
+    results= session.query(Station.station).all()
     session.close()
-    stns = list(np.ravel(results2))
+    stations = list(np.ravel(results))
 
-    #return json representation of the list
-    return jsonify(stns)
+    return jsonify(stations)
     # # Create a dictionary from the row data and append to a list of stations_list
     # stations_list = []
-    # for station in results2:
+    # for station in results:
     #     stations_dict = {}
     #     stations_dict["station"] = station
     #     stations_list.append(stations_dict)
-
     # return jsonify(stations_list)
 
 
@@ -85,13 +83,13 @@ def stationfunc():
 def temp():
     session = Session(engine)
     
-    results3= session.query(Measurement.date,Measurement.tobs).filter(Measurement.station=='USC00519281',Measurement.date>'2016-08-23').all()
+    results= session.query(Measurement.date,Measurement.tobs).filter(Measurement.station=='USC00519281',Measurement.date>'2016-08-23').all()
 
     session.close()
 
-    # Create a dictionary from the row data and append to a list of all_prcp
+    # Create a dictionary from the row data and append to a list of all_tobs
     all_tobs = []
-    for date, tobs in results3:
+    for date, tobs in results:
         tobs_dict = {}
         tobs_dict["date"] = date
         tobs_dict["tobs"] = tobs
@@ -102,7 +100,7 @@ def temp():
 
 @app.route("/api/v1.0/<start>")
 @app.route("/api/v1.0/<start>/<end>")
-def var_temp(start=None, end=None):
+def var_temp(start, end=None):
     session = Session(engine)
     sel = [func.min(Measurement.tobs), 
        func.max(Measurement.tobs), 
@@ -110,15 +108,15 @@ def var_temp(start=None, end=None):
        func.avg(Measurement.tobs)]
 
     if end != None:
-        results4= session.query(*sel).filter(Measurement.date>=start).filter(Measurement.date<=end).all()
+        results= session.query(*sel).filter(Measurement.date>=start).filter(Measurement.date<=end).all()
     else:
-        results4= session.query(*sel).filter(Measurement.date>=start).all()
+        results= session.query(*sel).filter(Measurement.date>=start).all()
 
     session.close()
 
     # Create a dictionary from the row data and append to a list of all_prcp
     all_calcs = []
-    for tmin, tmax, tcount, tavg  in results4:
+    for tmin, tmax, tcount, tavg  in results:
         calcs_dict = {}
         calcs_dict["tmin"] = tmin
         calcs_dict["tmax"] = tmax
